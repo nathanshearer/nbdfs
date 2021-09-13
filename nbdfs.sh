@@ -72,9 +72,9 @@ function nbdfs_read_block
 	#logger "read $NBDFS_ROOT/$BLOCK $OFFSET $SIZE"
 
 	if [ -e "$NBDFS_ROOT/$BLOCK" ]; then
-		dd iflag=skip_bytes,count_bytes if="$NBDFS_ROOT/$BLOCK" skip="$OFFSET" count="$SIZE" || return 1
+		dd iflag=skip_bytes,count_bytes if="$NBDFS_ROOT/$BLOCK" skip="$OFFSET" count="$SIZE" 2> /dev/null || return 1
 	else
-		dd iflag=skip_bytes,count_bytes if=/dev/zero skip="$OFFSET" count="$SIZE" || return 1
+		dd iflag=skip_bytes,count_bytes if=/dev/zero skip="$OFFSET" count="$SIZE"  2> /dev/null || return 1
 	fi
 }
 
@@ -133,7 +133,8 @@ function nbdfs_write_block
 		#dd iflag=count_bytes if=/dev/zero count=$BLOCK_SIZE of="$NBDFS_ROOT/$B1/$B2/$B3/$B4"
 		
 		# this is much faster
-		dd if=/dev/zero bs=1 count=0 seek=$BLOCK_SIZE of="$NBDFS_ROOT/$B1/$B2/$B3/$B4"
+		# use fsync to force a buffer flush and detect any IO errors: https://abbbi.github.io/dd/
+		dd if=/dev/zero bs=1 count=0 seek=$BLOCK_SIZE of="$NBDFS_ROOT/$B1/$B2/$B3/$B4" conv=fsync > /dev/null 2> /dev/null
 	fi
 	#logger "write $NBDFS_ROOT/$B1/$B2/$B3/$B4 $OFFSET $SIZE"
 
@@ -141,8 +142,9 @@ function nbdfs_write_block
 	#dd bs=1 ibs=1048576 obs=1048576 conv=notrunc seek=$OFFSET count=$SIZE of="$NBDFS_ROOT/$B1/$B2/$B3/$B4" ||
 
 	# this is much faster
+	# use fsync to force a buffer flush and detect any IO errors: https://abbbi.github.io/dd/
 	# note that dd does not have a oflag for count_bytes so this pipe is required
-	dd iflag=count_bytes count=$SIZE 2>/dev/null | dd oflag=seek_bytes conv=notrunc seek=$OFFSET of="$NBDFS_ROOT/$B1/$B2/$B3/$B4" 2>/dev/null
+	dd iflag=count_bytes count=$SIZE 2>/dev/null | dd oflag=seek_bytes conv=notrunc,fsync seek=$OFFSET of="$NBDFS_ROOT/$B1/$B2/$B3/$B4" > /dev/null 2> /dev/null
 }
 
 if [ ! -d $tmpdir ] || [ "x$1" = "x" ]; then
