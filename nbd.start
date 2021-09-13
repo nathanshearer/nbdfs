@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+	printf "Usage:\n"
+	printf "nbd.start /path/to/nbdfs [offset]\n"
+	printf "Examples:\n"
+	printf "nbd.start /mnt/googledrive/nbdfs\n"
+	printf "nbd.start /mnt/googledrive/nbd3 3\n"
+	exit 1
+fi
+
+DEST="$1"
+OFFSET=0
+if [ "$2" != "" ]; then
+	OFFSET="$2"
+fi
+
+while [ ! -d "$DEST" ]; do
+	printf "waiting for \"$DEST\"...\n"
+	sleep 1
+done
+
+/root/nbdkit-1.27.2/server/nbdkit -p $((10809+$OFFSET)) -f -- /root/nbdkit-1.27.2/plugins/sh/.libs/nbdkit-sh-plugin.so /root/nbdfs.sh file="$DEST" &
+sleep 5
+nbd-client 127.0.0.1 $((10809+$OFFSET)) /dev/nbd${OFFSET}
+OFFSET=$(($OFFSET+1))

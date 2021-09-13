@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ $# -eq 0 ]; then
-	printf "usage: nbdfs-verify DIR\n"
-	#printf "usage: nbdfs-verify --repair DIR\n"
+	printf "Usage: nbdfs-fsck.sh DIR\n"
+	printf "Usage: nbdfs-fsck.sh --repair DIR\n"
 	exit 1
 fi
 
@@ -25,7 +25,7 @@ else
 		printf "Incorrect size of $SIZE for \"$1\" which should be $2\n"
 		if $REPAIR; then
 			printf "Correcting size of \"$1\" to $2\n"
-			dd if=/dev/zero bs=1 count=0 seek="$2" of="$1" > /dev/null 2> /dev/null
+			dd if=/dev/zero bs=1 count=0 seek="$2" of="$1" conv=fsync > /dev/null 2> /dev/null
 		fi
 	fi
 fi
