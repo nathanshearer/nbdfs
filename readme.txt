@@ -20,3 +20,17 @@ nbdfs version 1 structure
 		root/000/000/000/000.bin
 		root/999/999/999/999.bin
 	Missing files are treated as 0x00 blocks
+
+Usage:
+	# /root/nbdfs-mkfs.sh 1048576 1073741824 /mnt/cloud/nbdfs
+	# /root/nbd.start /mnt/cloud/nbdfs
+	# parted /dev/nbd0 p
+	Error: /dev/nbd0: unrecognised disk label
+	Model: Unknown (unknown)                                                  
+	Disk /dev/nbd0: 1126TB
+	Sector size (logical/physical): 512B/512B
+	Partition Table: unknown
+	Disk Flags:
+	# hdparm -t /dev/nbd0
+	/dev/nbd0:
+	Timing buffered disk reads:  94 MB in  3.06 seconds =  30.68 MB/sec
