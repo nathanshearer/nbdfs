@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 -a $# -ne 2 ]; then
 	printf "Usage:\n"
 	printf "nbd.start /path/to/nbdfs [offset]\n"
 	printf "Examples:\n"
